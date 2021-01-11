@@ -21,7 +21,7 @@ const syncEnv = args => {
     confirm: `Are you sure you want to sync${ merge ? '-merge' : '' } global ENVs?`,
     success: ``,
     cancel: `Global ENVs sync canceled!`,
-    preConfirm: confirm,
+    preConfirm: !confirm,
     execute: async () => {
       // Merge / create the default.env
       await updateDefaultEnvFile(params)
@@ -40,16 +40,23 @@ module.exports = {
     options: {
       merge: {
         description: 'Merge the Keg-CLI global ENVs with the User global ENVs ( true )',
+        example: 'keg config sync --no-merge',
         default: true,
       },
       conflict: {
         allowed: [ 'global', 'local' ],
         description: 'Which config should be used when in conflict ( global )',
+        example: 'keg config sync --conflict local',
         default: 'global',
       },
       confirm: {
         description: 'Confirm before setting the value.',
-        example: 'keg config set --confirm false',
+        example: 'keg config sync --no-confirm',
+        default: true,
+      },
+      log: {
+        description: 'Confirm before setting the value.',
+        example: 'keg config sync --no-log',
         default: true,
       }
     },

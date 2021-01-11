@@ -1,5 +1,6 @@
 const { Logger } = require('KegLog')
 const { get } = require('@keg-hub/jsutils')
+const { ask } = require('@keg-hub/ask-it')
 const { GLOBAL_CONFIG_PATHS } = require('KegConst/constants')
 const { addTapLink } = require('KegUtils/globalConfig/addTapLink')
 const { checkCustomTaskFolder } = require('KegUtils/task/checkCustomTaskFolder')
