@@ -1,16 +1,13 @@
+
 const globalConfig = global.getGlobalCliConfig()
 const testTask = global.getTask()
-const unloadEnvs = global.loadMockEnvs()
 
 const { buildContainerContext } = require('../buildContainerContext')
 
 describe('buildContainerContext', () => {
 
-  afterAll(() => {
-    jest.resetAllMocks()
-    unloadEnvs()
-  })
-
+  afterAll(() => jest.resetAllMocks())
+  
   it('should return an object with keys cmdContext, contextEnvs, location, and tap', async () => {
 
     const res = await buildContainerContext({
@@ -45,7 +42,7 @@ describe('buildContainerContext', () => {
     })
     
     expect(contextEnvs.KEG_CONTEXT_PATH
-      .indexOf('/keg-hub/repos/keg-cli'))
+      .indexOf('/keg-hub'))
       .not.toBe(-1)
 
     expect(contextEnvs.KEG_DOCKER_FILE

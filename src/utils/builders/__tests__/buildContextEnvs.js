@@ -1,16 +1,12 @@
 
 const globalConfig = global.getGlobalCliConfig()
 const testTask = global.getTask()
-const unloadEnvs = global.loadMockEnvs()
 
 const { buildContextEnvs } = require('../buildContextEnvs')
 
 describe('buildContextEnvs', () => {
 
-  afterAll(() => {
-    jest.resetAllMocks()
-    unloadEnvs()
-  })
+  afterAll(() => jest.resetAllMocks())
   
   it('Should build the container context envs for the base container', async () => {
 
@@ -24,7 +20,7 @@ describe('buildContextEnvs', () => {
       })
       
       expect(contextEnvs.KEG_CONTEXT_PATH
-        .indexOf('/keg-hub/repos/keg-cli'))
+        .indexOf('/keg-hub'))
         .not.toBe(-1)
 
       expect(contextEnvs.KEG_DOCKER_FILE

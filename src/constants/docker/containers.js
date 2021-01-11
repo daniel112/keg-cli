@@ -1,6 +1,6 @@
 const path = require('path')
 const { KEG_ENVS } = require('../envs')
-const { PREFIXED } = require('./domainEnvs')
+const { PREFIXED } = require('./machine')
 const { loadValuesFiles, loadEnvFiles } = require('./loaders')
 const { containersPath, images } = require('./values')
 const { defineProperty } = require('../../utils/helpers/defineProperty')
@@ -24,7 +24,8 @@ const DEFAULT = {
     clean: '--rm',
     nocache: '--no-cache',
     entrypoint: '--entrypoint',
-    connect: '-it'
+    connect: '-it',
+    squash: '--squash',
   },
   DEFAULTS: {
     clean: true,
@@ -32,6 +33,7 @@ const DEFAULT = {
     entrypoint: false,
     file: true,
     nocache: false,
+    squash: false,
   },
   ARGS: keyMap([
     'GIT_KEY',

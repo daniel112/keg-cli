@@ -35,7 +35,7 @@ module.exports = deepFreeze({
     CLI_PATHS: 'cli.paths',
     GIT: 'cli.git',
     TAPS: `cli.taps`,
-    TAP_LINKS: `cli.taps`,
+    TAP_LINKS: `cli.taps.links`,
   },
 
   CLI_ROOT,

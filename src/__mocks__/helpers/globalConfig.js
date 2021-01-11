@@ -2,7 +2,7 @@ const path = require('path')
 
 const homeDir = require('os').homedir()
 const cliRoot = path.join(__dirname, '../../../')
-const kegHub = path.join(homeDir, '/keg-hub')
+const kegHub = process.env.KEG_ROOT_DIR || path.join(homeDir, '/keg-hub')
 const kegRepos = path.join(kegHub, 'repos')
 const kegTaps = path.join(kegHub, 'taps')
 
@@ -23,7 +23,6 @@ module.exports = {
         hub: "keg-hub",
         rc: 'tap-release-client',
       },
-      publicToken: '123456789',
       sshKey: path.join(homeDir, '.ssh/github'),
       key: '123456789'
     },
@@ -53,7 +52,9 @@ module.exports = {
       errorStack: false
     },
     taps: {
-      test: { path: path.join(cliRoot, 'src/__mocks__/tap') },
+      links: {
+        test: path.join(cliRoot, 'src/__mocks__/tap'),
+      }
     }
   },
   publish: {

@@ -7,7 +7,8 @@ const {
 } = require('./helpers')
 const { Logger } = require('KegLog')
 const { isArr, toStr } = require('@keg-hub/jsutils')
-const { executeCmd, spawnProc } = require('KegProc')
+const { executeCmd, spawnProc, pipeCmd } = require('KegProc')
+const { NEWLINES_MATCH } = require('KegConst/patterns')
 
 /**
  * Calls the docker cli from the command line and returns the response
@@ -142,6 +143,7 @@ const push = async url => {
     : Logger.success(`  Finished pushing Docker image to provider!`)
 }
 
+
 /**
  * Pulls a docker image from a provider to the local machine
  * @function
@@ -150,16 +152,36 @@ const push = async url => {
  * @returns {void}
  */
 const pull = async url => {
-
-  Logger.spacedMsg(`  Pulling docker image from url`, url)
+  Logger.spacedMsg(`Pulling docker image from url`, url)
 
   const { error, data } = await spawnProc(`docker pull ${ url }`)
 
-  return error && !data
-    ? apiError(error)
-    : Logger.success(`  Finished pulling Docker image from provider!`)
+  if(error) return apiError(error)
+
+  const [ imageName, tagName ] = url.split('/').pop().split(':')
+  const repository = url.split(':').shift()
+
+  const images = await dockerCli({
+    format: 'json',
+    opts: ['image', 'ls']
+  })
+
+  const foundImg = images &&
+    images.length &&
+    images.find(image => {
+      return image.repository === repository ||
+        (image.rootId === imageName &&
+        (image.tag === tagName || image.tags.includes(tagName)))
+    })
+
+  foundImg && Logger.success(`Finished pulling Docker image from provider!`)
+
+  return foundImg ||
+    apiError(new Error(`Image was pulled successfully, but it could not be found!`))
 
 }
+
+
 
 /**
  * Runs a raw docker cli command by spawning a child process
