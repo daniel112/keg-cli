@@ -12,7 +12,7 @@ const { getContainerConst } = require('../docker/getContainerConst')
  *
  * @returns {string} - Found base image tag
  */
-const getBaseImageTag = (params, cmdContext) => {
+const getBaseTag = (params, cmdContext) => {
   const baseFromImg = getContainerConst(cmdContext, `env.keg_base_image`)
   const baseFromTag = baseFromImg && baseFromImg.includes(':') && baseFromImg.split(':')[1]
   if(baseFromTag) return baseFromTag
@@ -25,5 +25,5 @@ const getBaseImageTag = (params, cmdContext) => {
 
 
 module.exports = {
-  getBaseImageTag
+  getBaseTag
 }

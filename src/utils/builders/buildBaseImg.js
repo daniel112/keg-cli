@@ -1,7 +1,7 @@
 const docker = require('KegDocCli')
 const { Logger } = require('KegLog')
 const { get } = require('@keg-hub/jsutils')
-const { getBaseImageTag } = require('KegUtils/getters/getBaseImageTag')
+const { getBaseTag } = require('KegUtils/getters/getBaseTag')
 const { runInternalTask } = require('KegUtils/task/runInternalTask')
 const { getContainerConst } = require('KegUtils/docker/getContainerConst')
 
@@ -36,7 +36,7 @@ const buildBaseImg = async args => {
 
   // Get the base from tag, and check if it matches the found image tag
   // If it does, then we have the correct base image, so no need to build 
-  const baseTag = exists && getBaseImageTag(args.params, buildContext)
+  const baseTag = exists && getBaseTag(args.params, buildContext)
 
   if(baseTag && checkMatchingTag(exists, baseTag)) return true
 

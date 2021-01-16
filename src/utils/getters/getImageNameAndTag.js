@@ -87,7 +87,7 @@ const ensureImageAndTag = (imageFromEnv, imageFromParams) => {
 
 
 // TODO: Need to write tests
-// This should replace all calls to getBaseImageTag
+// This should replace all calls to getBaseTag
 // And anywhere where the url, image and tag are needed
 console.log(`Write tests for this!!!`)
 
