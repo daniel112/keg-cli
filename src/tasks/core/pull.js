@@ -13,12 +13,21 @@ const { mergeTaskOptions } = require('KegUtils/task/options/mergeTaskOptions')
  * @returns {void}
  */
 const pullCore = async (args) => {
-  const { params: { branch, tag, version, env } } = args
+  const { params: { branch, tag, version }} = args
 
-  return pullService(
-    { ...args, __internal: { ...args.__internal, forcePull: true }},
-    { tap: undefined, context: 'core', tag: tag || version || branch || env }
-  )
+  return pullService({
+    ...args,
+    __internal: {
+      ...args.__internal,
+      forcePull: true
+    },
+    params: {
+      ...args.params,
+      tap: undefined,
+      context: 'core',
+      tag: tag || version || branch
+    }
+  })
 
 }
 module.exports = {

@@ -1,6 +1,9 @@
 const { getFromImage } = require('./getFromImage')
 const { getContainerConst } = require('../docker/getContainerConst')
 
+// TODO: Update this to return the image and the tag
+// Remove using the env for the tag by default
+
 /**
  * Gets the base tag from the KEG_BASE_IMAGE env or the getFromImg helper
  * @function
@@ -9,7 +12,7 @@ const { getContainerConst } = require('../docker/getContainerConst')
  *
  * @returns {string} - Found base image tag
  */
-const getBaseTag = (params, cmdContext) => {
+const getBaseImageTag = (params, cmdContext) => {
   const baseFromImg = getContainerConst(cmdContext, `env.keg_base_image`)
   const baseFromTag = baseFromImg && baseFromImg.includes(':') && baseFromImg.split(':')[1]
   if(baseFromTag) return baseFromTag
@@ -22,5 +25,5 @@ const getBaseTag = (params, cmdContext) => {
 
 
 module.exports = {
-  getBaseTag
+  getBaseImageTag
 }

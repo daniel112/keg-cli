@@ -1,6 +1,5 @@
 const { DOCKER } = require('KegConst/docker')
 const { runInternalTask } = require('KegUtils/task/runInternalTask')
-const { checkImageExists } = require('KegUtils/docker/checkImageExists')
 const { mergeTaskOptions } = require('KegUtils/task/options/mergeTaskOptions')
 
 /**
@@ -14,11 +13,7 @@ const { mergeTaskOptions } = require('KegUtils/task/options/mergeTaskOptions')
  * @returns {void}
  */
 const pushCore = async (args) => {
-  const { params } = args
-  const { build, log, env, tag=env } = params
-  const exists = await checkImageExists({ image: 'keg-core', tag })
-
-  await runInternalTask(
+  const pushedImage = await runInternalTask(
     'tasks.docker.tasks.provider.tasks.push',
     {
       ...args,
@@ -27,12 +22,11 @@ const pushCore = async (args) => {
         ...args.params,
         context: 'core',
         image: 'keg-core',
-        build: !exists,
-        tag,
       }
     }
   )
 
+  return pushedImage
 }
 
 module.exports = {

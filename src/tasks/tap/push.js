@@ -1,6 +1,6 @@
+const { get } = require('@keg-hub/jsutils')
 const { DOCKER } = require('KegConst/docker')
 const { runInternalTask } = require('KegUtils/task/runInternalTask')
-const { checkImageExists } = require('KegUtils/docker/checkImageExists')
 const { mergeTaskOptions } = require('KegUtils/task/options/mergeTaskOptions')
 
 /**
@@ -16,11 +16,7 @@ const { mergeTaskOptions } = require('KegUtils/task/options/mergeTaskOptions')
  * @returns {Promise<Void>}
  */
 const tapPush = async (args) => {
-  const { params } = args
-  const { build, log, env, tag=env } = params
-  const exists = await checkImageExists({ image: 'tap', tag })
-
-  await runInternalTask(
+  const pushedImage = await runInternalTask(
     'tasks.docker.tasks.provider.tasks.push',
     {
       ...args,
@@ -28,14 +24,12 @@ const tapPush = async (args) => {
       params: {
         ...args.params,
         context: 'tap',
-        image: 'tap',
-        tap: 'tap',
-        build: !exists,
-        tag,
+        image: get(args, 'params.tap') || 'tap',
       }
     }
   )
 
+  return pushedImage
 }
 
 module.exports = {

@@ -1,7 +1,7 @@
 const { DOCKER } = require('KegConst/docker')
+const { pullService } = require('KegUtils/services/pullService')
 const { runInternalTask } = require('KegUtils/task/runInternalTask')
 const { mergeTaskOptions } = require('KegUtils/task/options/mergeTaskOptions')
-const { getBaseTag } = require('KegUtils/getters/getBaseTag')
 
 /**
  * Pulls the keg base docker image
@@ -14,21 +14,22 @@ const { getBaseTag } = require('KegUtils/getters/getBaseTag')
  * @returns {void}
  */
 const pullBase = async (args) => {
-  const { params } = args
-  const { build, log, env, tag=env } = params
-
-  return runInternalTask('docker.tasks.provider.tasks.pull', {
+  const pulledImage = await pullService({
     ...args,
+    __internal: {
+      ...args.__internal,
+      forcePull: true
+    },
     params: {
-      ...params,
+      ...args.params,
+      tap: undefined,
       context: 'base',
       image: 'keg-base',
-      tap: undefined,
-      // Try to find the base tag, will default to current env if not tag found
-      tag: getBaseTag(params, 'base')
+      tag: tag || version || branch
     }
   })
 
+  return pulledImage
 }
 
 module.exports = {
