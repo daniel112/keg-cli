@@ -4,7 +4,7 @@ const { getServiceArgs } = require('./getServiceArgs')
 const { exists, get, isObj } = require('@keg-hub/jsutils')
 const { runInternalTask } = require('../task/runInternalTask')
 const { getImageNameAndTag } = require('../getters/getImageNameAndTag')
-const { shouldPullImage } = require('../getters/shouldPullImage')
+const { shouldPullImage } = require('../helpers/shouldPullImage')
 
 /**
  * Checks if the base image should be pulled
@@ -15,7 +15,7 @@ const { shouldPullImage } = require('../getters/shouldPullImage')
  *
  * @returns {boolean} - Should the keg-base image be pulled
  */
-const checkPullImage = ({ force, ...params}, internalForce) => {
+const checkPullImage = async ({ force, ...params}, internalForce) => {
   return exists(force)
     ? force
     : exists(internalForce)
