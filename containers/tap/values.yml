@@ -72,6 +72,7 @@ env:
   VERSION: "0.0.1"
   CONTAINER_NAME: tap
   CHOKIDAR_USEPOLLING: 1
+  KEG_BASE_IMAGE: tap:master
 
   # Git tap url in github
   GIT_APP_URL: INITIAL

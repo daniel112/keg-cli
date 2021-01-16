@@ -3,7 +3,7 @@ const { buildService } = require('./buildService')
 const { getServiceArgs } = require('./getServiceArgs')
 const { exists, get, isObj } = require('@keg-hub/jsutils')
 const { runInternalTask } = require('../task/runInternalTask')
-const { getImageNameAndTag } = require('../getters/getImageNameAndTag')
+const { getImgNameContext } = require('../getters/getImgNameContext')
 const { shouldPullImage } = require('../helpers/shouldPullImage')
 
 /**
@@ -42,9 +42,11 @@ const pullService = async (serviceArgs) => {
     ? { isNewImage: false }
     : await runInternalTask('docker.tasks.provider.tasks.pull', { 
         ...args,
-        params: {
-          ...args.params,
-          ...getImageNameAndTag(args),
+        __internal: {
+          ...args.__internal,
+          // TODO: update provider task pull
+          // to look for this internal object
+          imgNameContext: getImgNameContext(args.params),
         }
       })
 

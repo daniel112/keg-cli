@@ -67,4 +67,5 @@ env:
   IMAGE: "keg-core"
   VERSION: "0.0.1"
   CONTAINER_NAME: "keg-core"
+  KEG_BASE_IMAGE: keg-core:master
   CHOKIDAR_USEPOLLING: 1

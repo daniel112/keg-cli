@@ -68,4 +68,5 @@ env:
   IMAGE: keg-components
   VERSION: "0.0.1"
   CONTAINER_NAME: keg-components
+  KEG_BASE_IMAGE: keg-components:master
   CHOKIDAR_USEPOLLING: 1

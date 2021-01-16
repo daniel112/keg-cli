@@ -12,6 +12,7 @@ module.exports = {
   displayName: 'Keg CLI',
   docker: {
     providerUrl: 'docker.pkg.github.com',
+    namespace: "simpleviewinc/keg-packages",
     user: 'testuser',
     token: ''
   },
@@ -45,6 +46,9 @@ module.exports = {
         preConfirm: false,
         buildKit: true,
         defaultLocalBuild: true,
+        force: true,
+        imagePullPolicy: "Always",
+        defaultTag: "master"
       },
       git: {
         secure: false
