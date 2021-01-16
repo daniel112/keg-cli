@@ -1,9 +1,6 @@
 const { getFromImage } = require('./getFromImage')
 const { getContainerConst } = require('../docker/getContainerConst')
 
-// TODO: Update this to return the image and the tag
-// Remove using the env for the tag by default
-
 /**
  * Gets the base tag from the KEG_BASE_IMAGE env or the getFromImg helper
  * @function
