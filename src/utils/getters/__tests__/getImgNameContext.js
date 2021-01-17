@@ -123,8 +123,8 @@ describe('getImgNameContext', () => {
   afterAll(() => jest.resetAllMocks())
 
   Object.entries(testArgs).map(([name, data]) => {
-    it(data.description, () => {
-      expect(getImgNameContext(data.inputs)).toEqual(data.outputs)
+    it(data.description, async () => {
+      expect(await getImgNameContext(data.inputs)).toEqual(data.outputs)
     })
   })
 

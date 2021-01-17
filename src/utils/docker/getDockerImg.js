@@ -1,5 +1,7 @@
 const { getContainerConst } = require('./getContainerConst')
 
+// TODO: this can be replaced with getImgNameContext
+
 /**
  * Gets the docker image from the passed in image param or the docker build constants
  * @function

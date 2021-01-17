@@ -1,8 +1,10 @@
+const docker = require('KegDocCli')
 const { get } = require('@keg-hub/jsutils')
 const { getFromImage } = require('./getFromImage')
 const { getKegContext } = require('./getKegContext')
 const { getSetting } = require('../globalConfig/getSetting')
 const { getContainerConst } = require('../docker/getContainerConst')
+const { isDockerId } = require('../docker/isDockerId')
 const { getGlobalConfig } = require('../globalConfig/getGlobalConfig')
 
 // TODO:
@@ -147,6 +149,49 @@ const findTruthyVal = (...args) => {
 }
 
 /**
+ * Funds the first truthy value in an array of values
+ * @function
+ * @param {Object} args - Array of possiable values
+ *
+ * @returns {Object} - found truthy value or undefined
+ */
+const checkDockerId = async params => {
+  const { image, context, provider, namespace, tag } = params
+
+  const docImg = isDockerId(image)
+    ? await docker.image.get(image)
+    : isDockerId(image) && await docker.image.get(context)
+  
+  return !docImg
+    ? params
+    : {
+        provider,
+        namespace,
+        ...docImg.repository.includes('/')
+          ? getProviderAndNamespace(
+              // TODO: double check slice gives the correct array
+              docImg.repository.split('/').slice(0, 2),
+              findTruthyVal(
+                provider,
+                // TODO need to also pass in image data from docImg.repository
+                // This may have the provider and provider data on it
+                get(globalConfig, 'docker.providerUrl'),
+              ),
+              findTruthyVal(
+                namespace,
+                // TODO need to also pass in image data from docImg.repository
+                // This may have the provider and namespace data on it
+                get(globalConfig, 'docker.namespace'),
+              )
+            )
+          : {},
+          tag: tag || docImg.tag,
+          image: docImg.rootId,
+      }
+
+}
+
+/**
  * Gets an images provider, namespace, name, and tag from the passed in params or uses defaults
  * <br/> Uses the KEG_BASE_IMG env from the contexts values.yml file ENV's
  * @function
@@ -160,8 +205,22 @@ const findTruthyVal = (...args) => {
  *
  * @returns {Object} - Parse image data
  */
-const getImgNameContext = params => {
-  const { image, context, tag, provider, namespace, tap } = params
+const getImgNameContext = async params => {
+
+  // TODO: Add test for checking docker image id
+  // Validate the output
+  const paramsFromId = await checkDockerId(params)
+  if(params !== paramsFromId)
+    return buildImgVariants(paramsFromId)
+
+  const {
+    tag,
+    tap,
+    image,
+    context,
+    provider,
+    namespace,
+  } = paramsFromId
 
   // Separate the url, image and tag if needed
   const nameAndUrl = image
