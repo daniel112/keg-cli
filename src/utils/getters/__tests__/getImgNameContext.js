@@ -1,5 +1,5 @@
 const { injectedTest, injectedContainer } = require('KegMocks/injected/injectedTest')
-const { docker } = require('KegMocks/libs/docker')
+const { docker, dockerData } = require('KegMocks/libs/docker')
 
 const globalConfig = global.getGlobalCliConfig()
 jest.setMock('../../globalConfig/globalConfigCache', {
@@ -11,11 +11,7 @@ const withInjected = {
   INJECTED: injectedContainer
 }
 jest.setMock('KegConst/docker', { DOCKER: { ...DOCKER, CONTAINERS: withInjected }})
-
-
 jest.setMock('KegDocCli', docker)
-const container = global.testDocker.containers.core
-
 
 const { getImgNameContext } = require('../getImgNameContext')
 
@@ -114,6 +110,42 @@ const testArgs = {
       namespace: 'test-namespace',
       imageWTag: 'keg-components:master',
       full: 'docker.pkg.github.com/test-namespace/keg-components:master'
+    }
+  },
+  imageId: {
+    description: 'It should allow passing in an image id',
+    inputs: { image: 'a56406239194' },
+    outputs: {
+      image: 'keg-components',
+      tag: '0.0.1',
+      provider: 'docker.pkg.github.com',
+      namespace: 'simpleviewinc/keg-packages',
+      imageWTag: 'keg-components:0.0.1',
+      full: 'docker.pkg.github.com/simpleviewinc/keg-packages/keg-components:0.0.1'
+    }
+  },
+  contextId: {
+    description: 'It should allow passing in an image id as the context',
+    inputs: { context: 'b80dcb1cac10', tag: 'master' },
+    outputs: {
+      image: 'keg-core',
+      tag: 'master',
+      provider: 'docker.pkg.github.com',
+      namespace: 'simpleviewinc/keg-packages',
+      imageWTag: 'keg-core:master',
+      full: 'docker.pkg.github.com/simpleviewinc/keg-packages/keg-core:master'
+    }
+  },
+  contextIdOverride: {
+    description: 'It should allow passing in an id as the context and override with inputs ',
+    inputs: { context: 'b80dcb1cac10', provider: 'test-provider', namespace: 'test-namespace' },
+    outputs: {
+      image: 'keg-core',
+      tag: '0.0.1',
+      provider: 'test-provider',
+      namespace: 'test-namespace',
+      imageWTag: 'keg-core:0.0.1',
+      full: 'test-provider/test-namespace/keg-core:0.0.1'
     }
   },
 }

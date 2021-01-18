@@ -53,7 +53,7 @@ const getProviderAndNamespace = (urlSplit, provider, namespace) => {
  */
 const getNameFromUrl = (imgUrl, provider, namespace) => {
   // If no url return empty
-  if(!imgUrl) return {}
+  if(!imgUrl) return { provider, namespace }
 
   // If it doesn't include a / then is just a name and not a url
   if(!imgUrl.includes('/')) return { image: imgUrl }
@@ -160,35 +160,15 @@ const checkDockerId = async params => {
 
   const docImg = isDockerId(image)
     ? await docker.image.get(image)
-    : isDockerId(image) && await docker.image.get(context)
+    : isDockerId(context) && await docker.image.get(context)
   
-  return !docImg
-    ? params
-    : {
-        provider,
-        namespace,
-        ...docImg.repository.includes('/')
-          ? getProviderAndNamespace(
-              // TODO: double check slice gives the correct array
-              docImg.repository.split('/').slice(0, 2),
-              findTruthyVal(
-                provider,
-                // TODO need to also pass in image data from docImg.repository
-                // This may have the provider and provider data on it
-                get(globalConfig, 'docker.providerUrl'),
-              ),
-              findTruthyVal(
-                namespace,
-                // TODO need to also pass in image data from docImg.repository
-                // This may have the provider and namespace data on it
-                get(globalConfig, 'docker.namespace'),
-              )
-            )
-          : {},
-          tag: tag || docImg.tag,
-          image: docImg.rootId,
+  return docImg
+    ? {
+        ...params,
+        image: docImg.repository || docImg.rootId || image,
+        tag: tag || docImg.tag || isArr(docImg.tags) && docImg.tags[0],
       }
-
+    : params
 }
 
 /**
@@ -209,10 +189,6 @@ const getImgNameContext = async params => {
 
   // TODO: Add test for checking docker image id
   // Validate the output
-  const paramsFromId = await checkDockerId(params)
-  if(params !== paramsFromId)
-    return buildImgVariants(paramsFromId)
-
   const {
     tag,
     tap,
@@ -220,7 +196,7 @@ const getImgNameContext = async params => {
     context,
     provider,
     namespace,
-  } = paramsFromId
+  } = await checkDockerId(params)
 
   // Separate the url, image and tag if needed
   const nameAndUrl = image
