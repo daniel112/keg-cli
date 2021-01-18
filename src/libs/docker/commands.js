@@ -1,3 +1,5 @@
+const { Logger } = require('KegLog')
+const { executeCmd, spawnProc } = require('KegProc')
 const {
   apiError,
   apiSuccess,
@@ -5,9 +7,13 @@ const {
   noLoginError,
   cmdSuccess,
 } = require('./helpers')
-const { Logger } = require('KegLog')
-const { isArr, toStr, isColl } = require('@keg-hub/jsutils')
-const { executeCmd, spawnProc } = require('KegProc')
+const {
+  isArr,
+  isColl,
+  isStr,
+  toStr,
+  exists
+} = require('@keg-hub/jsutils')
 
 /**
  * Calls the docker cli from the command line and returns the response
