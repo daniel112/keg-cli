@@ -11,18 +11,21 @@ const { runInternalTask } = require('KegUtils/task/runInternalTask')
 const proxyService = async args => {
 
   // Make call to check if the keg-proxy container exists
-  const exists = await docker.container.exists(
+  const proxyContainer = await docker.container.get(
     `keg-proxy`,
     container => container.name === `keg-proxy`,
     'json'
   )
 
-  // If the proxy container does not exist, then start it
-  // This will ensure we can route traffic to it
-  return exists || await runInternalTask(`proxy.tasks.start`, {
-    ...args,
-    params: {},
-  })
+  const shouldStartProxy = Boolean(!proxyContainer || proxyContainer.state !== 'running')
+
+  // If the proxy container does not exist or it's not running, then start it
+  // This will ensure we can route traffic to all other containers
+  shouldStartProxy &&
+    await runInternalTask(`proxy.tasks.start`, {
+      ...args,
+      params: {},
+    })
 
 }
 
