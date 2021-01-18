@@ -1,7 +1,26 @@
 const { Logger } = require('KegLog')
-const { isArr, isStr, isObj, isFunc } = require('@keg-hub/jsutils')
-const { remove, dockerCli, dynamicCmd, raw } = require('./commands')
-const { buildNames, compareItems, noItemFoundError, toContainerEnvs } = require('./helpers')
+const {
+  exists,
+  isArr,
+  isStr,
+  isObj,
+  isFunc
+} = require('@keg-hub/jsutils')
+
+const {
+  dockerCli,
+  dynamicCmd,
+  inspect,
+  raw,
+  remove,
+} = require('./commands')
+
+const {
+  buildNames,
+  compareItems,
+  noItemFoundError,
+  toContainerEnvs
+} = require('./helpers')
 
 /**
  * Calls the docker api and gets a list of current images
@@ -168,7 +187,7 @@ const removeImage = args => {
  *
  * @returns {boolean} - Based on if the image exists
  */
-const exists = async (compare, doCompare, log) => {
+const existsImage = async (compare, doCompare, log) => {
   // Get all current images
   const images = await listImages({ errResponse: [], format: 'json', log })
 
@@ -279,7 +298,7 @@ const runImage = async (args) => {
  */
 const getCmd = async ({ clean, ...args }) => {
   const rawCmd = args.image
-    ? await inspect({ ...args, parse: false, filter: '-f {{.Config.Cmd}}' })
+    ? await inspectImage({ ...args, parse: false, format: '-f {{.Config.Cmd}}' })
     : Logger.error(`Docker image reference is required to run the image get command method!`) || ''
 
   const cmd = rawCmd.replace('\n', '')
@@ -300,41 +319,19 @@ const getCmd = async ({ clean, ...args }) => {
  * @function
  * @param {Object} args - Arguments to pass to the docker image command
  * @param {string} args.image - Reference to the docker image
- * @param {string} args.filter - Filter the returned results
- * @param {string} [args.format=json] - Format the of the response
+ * @param {string} args.item - Alt reference to the docker image
+ * @param {boolean} args.parse - Should parse the response into JSON
+ * @param {string} [args.format=json] - Format the returned results
  *
  * @returns {string|Object} - Docker image information
  */
-const inspect = async ({ envs, image, item, filter, location, parse=true }) => {
-  const imageRef = image || item
-
-  let cmdToRun = [ `docker image inspect` ]
-  filter && (cmdToRun.push(filter))
-  imageRef && (cmdToRun.push(imageRef))
-
-  const imgInfo = imageRef && await dockerCli(
-    { opts: cmdToRun },
-    { options: { env: envs }, cwd: location },
-  )
-
-  // Check if we should auto parse the response, If not return response
-  if(!parse) return imgInfo
-
-  try {
-    const parsed = JSON.parse(imgInfo)
-    return isArr(parsed) ? parsed[0] : isObj(parsed) ? parsed : {}
-  }
-  catch(error){
-
-    Logger.error(error.stack)
-    Logger.empty()
-
-    Logger.info(`Docker Inspect Response:`)
-    Logger.data(imgInfo)
-
-    process.exit(1)
-  }
-
+const inspectImage = async ({ image, item, ...args }) => {
+  return await inspect({
+    format: 'json',
+    ...args,
+    type: 'image',
+    item: image || item,
+  })
 }
 
 /**
@@ -349,11 +346,11 @@ const image = (args={}) => dynamicCmd(args, 'image')
 // Add the sub-methods to the root docker image method
 Object.assign(image, {
   clean,
-  exists,
+  exists: existsImage,
   get: getImage,
   getByTag,
   getCmd,
-  inspect,
+  inspect: inspectImage,
   list: listImages,
   run: runImage,
   remove: removeImage,

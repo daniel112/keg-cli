@@ -64,6 +64,9 @@ const push = jest.fn(() => {
 
 })
 
+const inspect = jest.fn(() => {
+  
+})
 
 const raw = jest.fn(() => {
 
@@ -77,6 +80,7 @@ const remove = jest.fn((args) => {
 module.exports = {
   dockerCli,
   dynamicCmd,
+  inspect,
   login,
   log,
   logs,

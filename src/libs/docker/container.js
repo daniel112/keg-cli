@@ -1,4 +1,12 @@
 const {
+  checkCall,
+  deepMerge,
+  isArr,
+  isStr,
+  toStr,
+} = require('@keg-hub/jsutils')
+
+const {
   compareItems,
   noItemError,
   cmdSuccess,
@@ -6,8 +14,14 @@ const {
   getCmdParams,
   toContainerEnvs
 } = require('./helpers')
-const { remove, dockerCli, dynamicCmd, raw } = require('./commands')
-const { isArr, toStr, isStr, deepMerge, checkCall } = require('@keg-hub/jsutils')
+
+const {
+  dockerCli,
+  dynamicCmd,
+  inspect,
+  raw,
+  remove,
+} = require('./commands')
 
 // Container commands the require an item argument of the container id or name
 const containerItemCmds = [
@@ -100,13 +114,13 @@ const clean = async args => {
  *
  * @returns {*} - Response from the docker command
  */
-const inspect = async ({ item, container, containerRef, ...cmdArgs }) => {
-  const toInspect = item || container || containerRef
-  if(!toInspect && !cmdArgs.skipError) return noItemError(`docker.container.inspect`, true)
-
-  const res = await runDockerCmd({ format: 'json', ...cmdArgs }, ['inspect', toInspect])
-
-  return isArr(res) ? res[0] : res
+const inspectContainer = async ({ item, container, containerRef, ...cmdArgs }) => {
+  return await inspect({
+    format: 'json',
+    ...cmdArgs,
+    type: 'container',
+    item: item || container || containerRef,
+  })
 }
 
 /**
@@ -373,7 +387,7 @@ Object.assign(container, {
   exec,
   exists,
   get,
-  inspect,
+  inspect: inspectContainer,
   list,
   remove: removeContainer,
   port,

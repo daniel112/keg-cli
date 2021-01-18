@@ -6,7 +6,7 @@ const {
   cmdSuccess,
 } = require('./helpers')
 const { Logger } = require('KegLog')
-const { isArr, toStr } = require('@keg-hub/jsutils')
+const { isArr, toStr, isColl } = require('@keg-hub/jsutils')
 const { executeCmd, spawnProc } = require('KegProc')
 
 /**
@@ -207,6 +207,67 @@ const prune = opts => {
   })
 }
 
+/**
+ * Runs docker inspect for the passed in item reference
+ * @function
+ * @param {Object|string} args - Arguments to pass to the docker image command
+ * @param {string} args.item - Reference to the docker item
+ * @param {boolean} args.parse - Should parse the response into JSON
+ * @param {string} [args.format=json] - Format the returned results
+ * @param {boolean} [args.skipError=false] - Should skip throwing an error
+ * @param {boolean} [args.log=false] - Should log docker commands as the are run
+ *
+ * @returns {string|Object} - Docker inspect meta data
+ */
+const inspect = async args => {
+
+  // Ensure the args are an object
+  const toInspect = isStr(args) ? { item: args, format: 'json' } : args
+
+  // Ensure we have an item to inspect
+  !toInspect.item &&
+    !params.skipError && 
+    noItemError(`docker.inspect`)
+
+  // Build the command, and add format if needed
+  let cmdToRun = [ `inspect`, toInspect.item ]
+  toInspect.type && cmdToRun.unshift(toInspect.type)
+
+  // Call the docker inspect command
+  const inspectData = await dockerCli({
+    opts: cmdToRun,
+    format: exists(toInspect.format) ? toInspect.format : 'json',
+    log: exists(toInspect.log) ? toInspect.log : false,
+  })
+
+  // Check if the response should be parsed
+  const parse = toInspect.parse ? toInspect.parse : true
+
+  // If no parsing, or it's already a collection, just return it
+  if(!parse || isColl(inspectData)) return inspectData
+
+  try {
+    // Parse the data, and return the first found item
+    const parsed = JSON.parse(imgInfo)
+    return isArr(parsed)
+      ? parsed[0]
+      : isObj(parsed)
+        ? parsed
+        : {}
+  }
+  catch(error){
+    if(cmdArgs.skipError) return {}
+  
+    Logger.error(error.stack)
+    Logger.empty()
+
+    Logger.info(`Docker Inspect Response:`)
+    Logger.data(inspectData)
+
+    process.exit(1)
+  }
+
+}
 
 /**
  * Runs docker system prune command
@@ -241,6 +302,7 @@ const log = (args, cmdArgs={}) => {
 module.exports = {
   dockerCli,
   dynamicCmd,
+  inspect,
   login,
   log,
   logs: log,
