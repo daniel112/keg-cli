@@ -84,7 +84,10 @@ const docker = {
     tag: jest.fn(({ image, log, provider, tag }) => {
     
     }),
-  }
+  },
+  inspect: jest.fn(({ item, type='image' }) => {
+    return dockerData.inspect[type][item] || {}
+  }),
 }
 
 module.exports = {

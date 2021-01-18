@@ -160,8 +160,37 @@ const dockerData = {
       ],
       rootId: "keg-components"
     }
-  }
+  },
+  inspect: {
+    container: {
+      tap: {
+        id: 'ae6debbb4fcc',
+        Config: {
+          Cmd: [
+            "/bin/bash",
+            "container/run.sh"
+          ],
+        }
+      }
+    },
+    image: {
+      components: {
+        id: '980398bef84b',
+        Config: {
+          Cmd: [
+            "/bin/bash",
+            "/keg/keg-cli/containers/components/run.sh"
+          ],
+        },
+      }
+    },
+  },
 }
+
+const tapId = dockerData.inspect.container.tap.id
+dockerData.inspect.container[tapId] = dockerData.inspect.container.tap
+const compsId = dockerData.inspect.image.components.id
+dockerData.inspect.image[compsId] = dockerData.inspect.image.components
 
 global.testDocker = dockerData
 

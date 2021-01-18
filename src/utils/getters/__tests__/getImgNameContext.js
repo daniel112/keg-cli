@@ -1,5 +1,6 @@
 const { injectedTest, injectedContainer } = require('KegMocks/injected/injectedTest')
-const { docker, dockerData } = require('KegMocks/libs/docker')
+const { docker } = require('KegMocks/libs/docker')
+const { testEnum } = require('KegMocks/jest/testEnum')
 
 const globalConfig = global.getGlobalCliConfig()
 jest.setMock('../../globalConfig/globalConfigCache', {
@@ -154,10 +155,6 @@ describe('getImgNameContext', () => {
 
   afterAll(() => jest.resetAllMocks())
 
-  Object.entries(testArgs).map(([name, data]) => {
-    it(data.description, async () => {
-      expect(await getImgNameContext(data.inputs)).toEqual(data.outputs)
-    })
-  })
+  testEnum(testArgs, getImgNameContext)
 
 })
