@@ -247,14 +247,15 @@ const inspect = async args => {
   })
 
   // Check if the response should be parsed
-  const parse = toInspect.parse ? toInspect.parse : true
+  const parse = exists(toInspect.parse) ? toInspect.parse : true
 
   // If no parsing, or it's already a collection, just return it
   if(!parse || isColl(inspectData)) return inspectData
 
   try {
+
     // Parse the data, and return the first found item
-    const parsed = JSON.parse(imgInfo)
+    const parsed = JSON.parse(inspectData)
     return isArr(parsed)
       ? parsed[0]
       : isObj(parsed)
@@ -262,7 +263,7 @@ const inspect = async args => {
         : {}
   }
   catch(error){
-    if(cmdArgs.skipError) return {}
+    if(args.skipError) return inspectData
   
     Logger.error(error.stack)
     Logger.empty()
