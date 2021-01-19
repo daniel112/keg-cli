@@ -13,7 +13,7 @@ describe('checkPathExists', () => {
 
   it('should call pathExists from the filesys lib', async () => {
 
-    await checkPathExists('I/am/a/path')
+    await checkPathExists('I/am/a/path/boo')
 
     expect(pathExists).toHaveBeenCalled()
 
