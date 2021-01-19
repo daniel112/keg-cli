@@ -5,6 +5,7 @@ const { __updateGlobalConfig } = require('./globalConfigCache')
 const { validateGlobalConfig } = require('./validateGlobalConfig')
 const { ensureDirSync, writeFile } = require('KegFileSys/fileSys')
 const { GLOBAL_CONFIG_FOLDER, GLOBAL_CONFIG_FILE } = require('../../constants/constants')
+const { NODE_ENV } = process.env
 
 /**
  * Validate the config is the global config and that then global config path exists
@@ -22,7 +23,8 @@ const saveGlobalConfig = async config => {
   )
 
   // Write the temp config file
-  validateGlobalConfig(config) &&
+  NODE_ENV !== 'test' &&
+    validateGlobalConfig(config) &&
     await writeFile(
       path.join(GLOBAL_CONFIG_FOLDER, GLOBAL_CONFIG_FILE),
       JSON.stringify(config, null, 2),

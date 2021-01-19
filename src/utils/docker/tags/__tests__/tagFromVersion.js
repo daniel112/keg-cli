@@ -1,3 +1,4 @@
+const globalConfig = global.getGlobalCliConfig()
 const path = require('path')
 const { DOCKER } = require('KegConst/docker')
 const { getTask } = require('KegMocks/helpers/testTasks')
@@ -5,7 +6,6 @@ const { deepMerge, get, uuid } = require('@keg-hub/jsutils')
 const { allowedTagOpts } = require('../../../getters/getTagVarMap')
 const { containerContexts } = require('KegMocks/contexts/containerContexts')
 
-const globalConfig = global.getGlobalCliConfig()
 
 const defParams = {
   local: false,

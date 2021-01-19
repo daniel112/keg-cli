@@ -18,7 +18,7 @@
       "publicToken": "c9ee22e12f21993e6cbe0add9319bf59:b15873b3f06436e89b0cb652f4bc07590876a22017946b1dad13d5772349e32d5df307096f379f262d3afaaf6d2c4b73",
       "repos": {
         "hub": "keg-hub",
-        "rc": "tap-release-client"
+        "cli": "keg-cli"
       }
     },
     "taps": {},

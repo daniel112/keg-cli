@@ -1,0 +1,35 @@
+name: cli-tests
+on: pull_request
+
+jobs:
+  tests:
+    name: 'Run CLI Tests'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: "Setup node Version"
+        uses: actions/setup-node@v2
+        with:
+          node-version: "12"
+
+      - name: "Cache Dependencies"
+        uses: bahmutov/npm-install@v1
+        with:
+          install-command: yarn install --ignore-engines --frozen-lockfile --silent
+
+      - name: "Setup CLI config"
+        id: setup-cli-config
+        run: bash scripts/ci/setupCLIConfig.sh
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - name: "Run CLI Tests"
+        id: run-repo-tests
+        run: bash scripts/ci/runYarnCmd.sh "test"

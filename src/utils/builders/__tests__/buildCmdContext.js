@@ -1,7 +1,6 @@
 
 const globalConfig = global.getGlobalCliConfig()
 const testTask = global.getTask()
-jest.setTimeout(15000)
 
 const { buildCmdContext } = require('../buildCmdContext')
 
