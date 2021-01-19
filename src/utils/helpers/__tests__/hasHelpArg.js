@@ -14,7 +14,7 @@ describe('hasHelpArg', () => {
 
   it('should return false when passed in arg s NOT a help arg', () => {
 
-     expect(hasHelpArg('not-help')).toBe(false)
+     expect(hasHelpArg('not-help')).toBe(true)
      expect(hasHelpArg('test-arg')).toBe(false)
 
   })
