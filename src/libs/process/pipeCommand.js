@@ -131,7 +131,7 @@ const buildEvents = (config={}, logs, loadingConf) => {
 /**
  * Executes an child process, with stdio set to pipe
  * @param {string} cmd - Command to be run
- * @param {Array} options - extra options to pass to the child process
+ * @param {Object} options - extra options to pass to the child process
  * @param {string} location - Where the command should be run
  *
  * @returns {*} - Response from async exec cmd

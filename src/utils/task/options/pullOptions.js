@@ -17,8 +17,8 @@ const pullOptions = (task, action) => {
       default: 'docker.pkg.github.com'
     },
     namespace: {
-      description: 'Use the docker namespace (organization) instead of the user for the docker provider url',
-      default: true
+      description: 'Use custom namespace (organization) instead of default defined in the globalConfig for docker provider url',
+      example: 'keg ${ task } pull --namespace my-organization',
     },
     from: fromImage(task, action),
     branch: {
@@ -34,7 +34,10 @@ const pullOptions = (task, action) => {
       description: 'The version of the image to pull',
       example: 'keg ${ task } pull --version 0.0.1',
     },
-
+    force: {
+      description: 'Force pull the image, overriding the globalConfig settings.',
+      example: `keg ${ task } pull --force`,
+    }
   }
 }
 

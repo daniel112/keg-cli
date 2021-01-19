@@ -10,12 +10,13 @@ const { shouldPullImage } = require('../helpers/shouldPullImage')
  * Checks if the base image should be pulled
  * @function
  * @param {Object} serviceArgs - Parsed option arguments passed to the current task
+ * @param {Object} serviceArgs.force - Override default setting 
  * @param {boolean} internalForce - Internal Keg-CLI argument to force pulling the image
  * @param {boolean} paramForce - Force pull from params
  *
  * @returns {boolean} - Should the keg-base image be pulled
  */
-const checkPullImage = async ({ force, ...params}, internalForce) => {
+const checkPullImage = async ({ force, ...params }, internalForce) => {
   return exists(force)
     ? force
     : exists(internalForce)
@@ -27,30 +28,52 @@ const checkPullImage = async ({ force, ...params}, internalForce) => {
  * Checks the if a new base image should be pulled, and pulls it if needed
  * @param {Object} serviceArgs - Parsed option arguments passed to the current task
  *
- * @returns {*} - Response from the docker pull task
+ * @returns {Object} - docker pull task response. (Sets `isNewImage` property if a new image was pulled)
  */
-const pullService = async (serviceArgs) => {
+const pullService = async serviceArgs => {
 
   // Check if the image should be pulled
   const shouldPull = checkPullImage(
-    params,
+    serviceArgs.params,
     get(serviceArgs, '__internal.forcePull'),
   )
 
-  // Check and pull the image if needed
-  const pulledImg = !shouldPull
-    ? { isNewImage: false }
-    : await runInternalTask('docker.tasks.provider.tasks.pull', { 
-        ...args,
-        __internal: {
-          ...args.__internal,
-          // TODO: update provider task pull
-          // to look for this internal object
-          imgNameContext: getImgNameContext(args.params),
-        }
-      })
+  const imgNameContext = await getImgNameContext(serviceArgs.params)
 
-  return pulledImg
+  if(!shouldPull) return { imgNameContext, isNewImage: false }
+
+  // Check and pull the image if needed
+  const imgPullResp = await runInternalTask('docker.tasks.provider.tasks.pull', { 
+    ...serviceArgs,
+    __internal: {
+      ...serviceArgs.__internal,
+      imgNameContext,
+      forcePull: shouldPull,
+    }
+  })
+
+  // If no new image, or no name context, just return the response
+  if(!imgPullResp.isNewImage) return imgPullResp
+
+  // Add the local tag so it seems like it's been built on the host machine
+  await docker.image.tag({
+    item: get(imgPullResp, 'imgNameContext.full'),
+    tag: get(imgPullResp, 'imgNameContext.imageWTag'),
+    provider: true
+  })
+
+  // TODO: figure out some way to add the tag back to the image
+  // Before checking is it should be pulled again
+  // If we remove the tag, then the next time it checks for the image
+  // It will think it does not exist, and try to pull it
+  // Remove the remote tag
+  // await docker.image.removeTag({
+  //   image: imgPullResp.imageRef,
+  //   tag: get(imgPullResp, 'imgNameContext.tag'),
+  // })
+
+  return imgPullResp
+
 }
 
 module.exports = {

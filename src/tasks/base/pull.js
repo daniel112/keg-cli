@@ -1,6 +1,5 @@
 const { DOCKER } = require('KegConst/docker')
 const { pullService } = require('KegUtils/services/pullService')
-const { runInternalTask } = require('KegUtils/task/runInternalTask')
 const { mergeTaskOptions } = require('KegUtils/task/options/mergeTaskOptions')
 
 /**
@@ -14,7 +13,9 @@ const { mergeTaskOptions } = require('KegUtils/task/options/mergeTaskOptions')
  * @returns {void}
  */
 const pullBase = async (args) => {
-  const pulledImage = await pullService({
+  const { params: { branch, tag, version }} = args
+
+  return await pullService({
     ...args,
     __internal: {
       ...args.__internal,
@@ -28,8 +29,6 @@ const pullBase = async (args) => {
       tag: tag || version || branch
     }
   })
-
-  return pulledImage
 }
 
 module.exports = {

@@ -1,6 +1,6 @@
 const docker = require('KegDocCli')
-const { get } = require('@keg-hub/jsutils')
-const { getFromImage } = require('./getFromImage')
+const { get, noOpObj } = require('@keg-hub/jsutils')
+const { getImgFrom } = require('./getImgFrom')
 const { getKegContext } = require('./getKegContext')
 const { getSetting } = require('../globalConfig/getSetting')
 const { getContainerConst } = require('../docker/getContainerConst')
@@ -95,11 +95,12 @@ const getTagFromName = (imgName, tag) => {
  * Then parses it to get the image name context information
  * @function
  * @param {string} context - Name of the image name to be parsed
+ * @param {Object} params - Options passed to the task from the command line
  *
  * @returns {Object} - Parsed image name data from the KEG_BASE_IMAGE env
  */
-const getBaseFromEnv = (context) => {
-  const baseFromEnv = getContainerConst(context, `env.keg_base_image`)
+const getBaseFromEnv = (context, params) => {
+  const baseFromEnv = getImgFrom(params, noOpObj, context)
 
   // If no baseFrom env, just return
   if(!baseFromEnv) return {}
@@ -205,7 +206,11 @@ const getImgNameContext = async params => {
 
   // Get the tag from the image name
   const nameAndTag = getTagFromName(nameAndUrl.image, tag)
-  const baseFromEnv = getBaseFromEnv(getKegContext(tap || context || nameAndTag.image))
+  const baseFromEnv = getBaseFromEnv(
+    getKegContext(tap || context || nameAndTag.image),
+    params,
+  )
+
   const globalConfig = getGlobalConfig()
   
   // The the image name and tag from the passed in params or KEG_BASE_IMG

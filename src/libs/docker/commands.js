@@ -1,5 +1,5 @@
 const { Logger } = require('KegLog')
-const { executeCmd, spawnProc } = require('KegProc')
+const { executeCmd, spawnProc, pipeCmd } = require('KegProc')
 const {
   apiError,
   apiSuccess,
@@ -131,40 +131,84 @@ const login = async ({ providerUrl, user, token }) => {
 }
 
 /**
+ * Creates a child process and pipes the output to the current process
+ * @function
+ * @param {string} cmd - Command to run
+ * @param {boolean} log - Log messages and docker commands
+ *
+ * @returns {Object} - Output of the commands std out/err and exitCode
+ */
+const pipeDocCmd = (cmd, log=true) => {
+  return new Promise(async (res, rej) => {
+    const output = { data: [], error: [] }
+
+    await pipeCmd(cmd, {
+      onStdOut: data => {
+        log && Logger.stdout(data)
+        output.data.push(data)
+      },
+      onStdErr: data => {
+        log && Logger.stderr(data)
+        output.error.push(data)
+      },
+      onError: data => {
+        log && Logger.stderr(data)
+        output.error.push(data)
+      },
+      onExit: (exitCode) => res({
+        data: output.data.join(''),
+        error: output.error.join(''),
+        exitCode,
+      })
+    })
+
+  })
+}
+
+/**
  * Pushes a local docker image to the docker provider base on the url
  * @function
- * @param {string} url - Url to push the image to
+ * @param {string|Object} url - Url to push the image to
+ * @param {boolean} log - Log messages and docker commands
+ * @param {boolean} skipError - Skip throwing an error if command fails
  *
- * @returns {void}
+ * @returns {boolean} True if the image could be pushed
  */
-const push = async url => {
+const push = async (url, log, skipError) => {
+  const toPush = isStr(url)  ? { url, log, skipError } : url
 
-  Logger.spacedMsg(`  Pushing docker image to url`, url)
+  toPush.log && Logger.spacedMsg(`Pushing docker image to`, toPush.url)
 
-  const { error, data } = await spawnProc(`docker push ${ url }`)
+  const { error, data, exitCode } = await pipeDocCmd(`docker push ${toPush.url}`)
 
-  return error && !data
-    ? apiError(error)
-    : Logger.success(`  Finished pushing Docker image to provider!`)
+  if(error.length || exitCode) return toPush.skipError ? false : apiError(error)
+
+  toPush.log && Logger.success(`\nFinished pushing ${toPush.url} to provider!\n`)
+
+  return true
 }
 
 /**
  * Pulls a docker image from a provider to the local machine
  * @function
- * @param {string} url - Url to pull the image from
+ * @param {string|Object} url - Url to pull the image from
+ * @param {boolean} log - Log messages and docker commands
+ * @param {boolean} skipError - Skip throwing an error if command fails
  *
- * @returns {void}
+ * @returns {boolean} True if the image could be pulled
  */
-const pull = async url => {
+const pull = async (url, log=true, skipError=false) => {
+  const toPull = isStr(url) ? { url, log, skipError } : url
 
-  Logger.spacedMsg(`  Pulling docker image from url`, url)
+  toPull.log && Logger.spacedMsg(`Pulling docker image from`, toPull.url)
 
-  const { error, data } = await spawnProc(`docker pull ${ url }`)
+  const { error, data, exitCode } = await pipeDocCmd(`docker pull ${toPull.url}`)
 
-  return error && !data
-    ? apiError(error)
-    : Logger.success(`  Finished pulling Docker image from provider!`)
+  if(error.length || exitCode) return toPull.skipError ? false : apiError(error)
 
+  toPull.log && Logger.success(`\nFinished pulling ${toPull.url} from provider!\n`)
+
+  return data
 }
 
 /**

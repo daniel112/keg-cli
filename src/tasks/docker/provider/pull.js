@@ -1,18 +1,9 @@
 const docker = require('KegDocCli')
 const { Logger } = require('KegLog')
-const { DOCKER } = require('KegConst/docker')
-const { get } = require('@keg-hub/jsutils')
-const { getTagName } = require('KegUtils/getters/getTagName')
-const { getRepoPath } = require('KegUtils/getters/getRepoPath')
-const { getFromImage } = require('KegUtils/getters/getFromImage')
-const { buildProviderUrl } = require('KegUtils/docker/buildProviderUrl')
-const { buildCmdContext } = require('KegUtils/builders/buildCmdContext')
+const { get, noOpObj } = require('@keg-hub/jsutils')
+const { getImgNameContext } = require('KegUtils/getters/getImgNameContext')
 const { mergeTaskOptions } = require('KegUtils/task/options/mergeTaskOptions')
-
-// If the image does not exist, then it should always be pulled
-// Otherwise this helper should be used to to check if a new image should be pulled
-// Based on the pull policy of the globalConfig, and contextEnvs
-const { shouldPullImage } = require('KegUtils/helpers/shouldPullImage')
+const { generalError } = require('KegUtils/error/generalError')
 
 /**
  * Pulls an image locally from a configured registry provider in the cloud
@@ -24,53 +15,24 @@ const { shouldPullImage } = require('KegUtils/helpers/shouldPullImage')
  * @param {Object} args.params - Formatted key / value pair of the passed in options
  * @param {Object} globalConfig - Global config object for the keg-cli
  *
- * @returns {void}
+ * @returns {Object} - Current state of the image to be pulled
  */
 const providerPull = async args => {
-  const { globalConfig, params, task } = args
-  const {
-    branch,
-    context,
-    version,
-    __injected,
-    provider=get(globalConfig, 'docker.providerUrl'),
-  } = params
+  const { globalConfig, __internal=noOpObj, params, task } = args
 
-  // Get the pull context
-  const pullContext = await buildCmdContext(args)
+  // Get the image name context, so we can pull the image
+  const imgNameContext = __internal.imgNameContext || await getImgNameContext(params)
 
-  const imageName = getFromImage(
-    params,
-    {},
-    __injected && pullContext.tap || pullContext.cmdContext
-  )
+  // Try to pull the image
+  const pulledRes = await docker.pull(imgNameContext.full)
 
-  const tagName = await getTagName(params, imageName)
+  // // Get the docker image object that was just pulled
+  const imageRef = await docker.image.get(imgNameContext.full)
+  const isNewImage = !pulledRes.includes('Image is up to date')
 
-  // Check if the imageName already has a tag
-  // If it does, check if a tagName exists
-  // If it does, replace the tag on the imageName with the tagName value
-  const imageNameWTag = imageName.includes(':')
-    ? tagName
-      ? `${imageName.split(':')[0]}:${tagName}`
-      : imageName
-    : `${imageName}:${tagName}`
+  // Return the state of the image being pulled
+  return { imgNameContext, isNewImage, imageRef }
 
-  const url = await buildProviderUrl({}, args)
-
-  // Check if the image already has the provider information added
-  // If it's missing add it
-  const imageUrl = imageNameWTag.includes('/')
-    ? imageNameWTag
-    : `${url}/${imageNameWTag}`
-
-  const isNewImage = await docker.pull(imageUrl, false)
-  isNewImage && Logger.success(`\nFinished pulling Docker image from provider!\n`)
-
-  // Get the docker image object that was just pulled
-  const imageObj = await docker.image.get(imageUrl)
-
-  return { ...pullContext, imageUrl, isNewImage, imageObj }
 }
 
 
